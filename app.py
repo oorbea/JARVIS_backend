@@ -1,7 +1,11 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from flask_smorest import Api
+from flask_migrate import Migrate, upgrade as alembic_upgrade
+
+from db import create_db
 
 def create_app(settings_module: str = 'globals') -> Flask:
     """
@@ -20,8 +24,20 @@ def create_app(settings_module: str = 'globals') -> Flask:
     DB_PORT = app.config['DB_PORT']
     DB_NAME = app.config['DB_NAME']
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
+    }
+
+    DB_SSL:bool = app.config.get("DB_SSL", False)
+    DB_SSL_CA = app.config.get("DB_SSL_CA")
+    if DB_SSL and DB_SSL_CA:
+        app.config.setdefault("SQLALCHEMY_ENGINE_OPTIONS", {})
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"]["connect_args"] = {
+            "ssl": {"ca": DB_SSL_CA}
+        }
         
     CORS(
        app,
@@ -43,6 +59,31 @@ def create_app(settings_module: str = 'globals') -> Flask:
         
     app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
     
+    def getApiPrefix(url:str) -> str: return f"{app.config['API_PREFIX']}/{url}"
+
+    jwt = JWTManager(app)
+
+    api = Api(app)
+
+    api.spec.components.security_scheme(
+        'jwt', {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT', 'x-bearerInfoFunc': 'app.decode_token'}
+    )
+
+    api.spec.options["security"] = [{"jwt": []}]
+
+    # HTTP routes
+    # api.register_blueprint(SampleBlueprint, url_prefix=getApiPrefix('sample_blueprint'))
+
+    with app.app_context():
+        db = create_db(app)
+        import models
+        migrate = Migrate(app, db)
+        DB_AUTO_MIGRATE = app.config.get("DB_AUTO_MIGRATE", True)
+        migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
+        if DB_AUTO_MIGRATE and os.path.isdir(migrations_dir) and os.path.isfile(os.path.join(migrations_dir, "env.py")):
+            alembic_upgrade()
+    
+    ## NotImplementedError
     @app.errorhandler(NotImplementedError)
     def handle_not_implemented_error(error):
         response = {
@@ -52,22 +93,14 @@ def create_app(settings_module: str = 'globals') -> Flask:
         }
         return jsonify(response), 501
     
-    def getApiPrefix(url:str) -> str: return f"{app.config['API_PREFIX']}/{url}"
-
-    api = Api(app)
-
-    # api.register_blueprint(SampleBlueprint, url_prefix=getApiPrefix('sample_blueprint'))
-
-    from db import create_db
-    import models
-
-    with app.app_context():
-        db = create_db(app)
-        db.create_all()
+    @app.route('/')
+    def main_page():
+        """Redirects to the Swagger UI documentation."""
+        return redirect(app.config['OPENAPI_SWAGGER_UI_PATH'], code=302)
     
     return app
 
 app = create_app(os.getenv('SETTINGS_MODULE', 'globals'))
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     app.run(threaded=True, host="0.0.0.0", port=app.config.get('PORT', 5000), debug=app.config.get('DEBUG', False), use_reloader=app.config.get('DEBUG', False))

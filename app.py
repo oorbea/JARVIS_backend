@@ -37,6 +37,19 @@ def create_app(settings_module: str = 'globals') -> Flask:
         
     app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 
+    app.config['API_SPEC_OPTIONS'] = {
+        "components": {
+            "securitySchemes": {
+                "ApiKeyAuth": {
+                    "type": "apiKey",
+                    "in": "header",
+                    "name": "x-api-key"
+                }
+            }
+        },
+        "security": [{"ApiKeyAuth": []}]
+    }
+
     if not app.config.get("API_KEY"):
         raise ValueError("API_KEY is not set.")
     

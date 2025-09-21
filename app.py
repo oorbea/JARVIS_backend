@@ -1,11 +1,10 @@
 import os
 from flask import Flask, jsonify, redirect
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
 from flask_smorest import Api
-from flask_migrate import Migrate, upgrade as alembic_upgrade
+from bcrypt import hashpw, gensalt
 
-from db import create_db
+from resources.Version import blp as VersionBlueprint
 
 def create_app(settings_module: str = 'globals') -> Flask:
     """
@@ -17,27 +16,6 @@ def create_app(settings_module: str = 'globals') -> Flask:
     app = Flask(__name__)
     
     app.config.from_object(settings_module)
-
-    DB_USER = app.config['DB_USER']
-    DB_PASSWORD = app.config['DB_PASSWORD']
-    DB_HOST = app.config['DB_HOST']
-    DB_PORT = app.config['DB_PORT']
-    DB_NAME = app.config['DB_NAME']
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 1800,
-    }
-
-    DB_SSL:bool = app.config.get("DB_SSL", False)
-    DB_SSL_CA = app.config.get("DB_SSL_CA")
-    if DB_SSL and DB_SSL_CA:
-        app.config.setdefault("SQLALCHEMY_ENGINE_OPTIONS", {})
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"]["connect_args"] = {
-            "ssl": {"ca": DB_SSL_CA}
-        }
         
     CORS(
        app,
@@ -58,30 +36,20 @@ def create_app(settings_module: str = 'globals') -> Flask:
     app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist/'
         
     app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
+
+    if not app.config.get("API_KEY"):
+        raise ValueError("API_KEY is not set.")
+    
+    api_key = app.config.get("API_KEY").encode("utf-8")
+    hashed = hashpw(api_key, gensalt(rounds=12))
+    app.config['API_KEY'] = hashed.decode()
     
     def getApiPrefix(url:str) -> str: return f"{app.config['API_PREFIX']}/{url}"
 
-    jwt = JWTManager(app)
-
     api = Api(app)
 
-    api.spec.components.security_scheme(
-        'jwt', {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT', 'x-bearerInfoFunc': 'app.decode_token'}
-    )
-
-    api.spec.options["security"] = [{"jwt": []}]
-
     # HTTP routes
-    # api.register_blueprint(SampleBlueprint, url_prefix=getApiPrefix('sample_blueprint'))
-
-    with app.app_context():
-        db = create_db(app)
-        import models
-        migrate = Migrate(app, db)
-        DB_AUTO_MIGRATE = app.config.get("DB_AUTO_MIGRATE", True)
-        migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
-        if DB_AUTO_MIGRATE and os.path.isdir(migrations_dir) and os.path.isfile(os.path.join(migrations_dir, "env.py")):
-            alembic_upgrade()
+    api.register_blueprint(VersionBlueprint, url_prefix=app.config['VERSION_ENDPOINT'])
     
     ## NotImplementedError
     @app.errorhandler(NotImplementedError)

@@ -27,5 +27,4 @@ API_KEY = os.getenv('API_KEY', None)
 
 #------------------------------
 
-ALLOWED_PICTURE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-PROFILE_PICTURES_DIR = "public/ProfilePictures"
+MURF_API_KEY = os.getenv("MURF_API_KEY")

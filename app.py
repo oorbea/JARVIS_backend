@@ -2,9 +2,12 @@ import os
 from flask import Flask, jsonify, redirect
 from flask_cors import CORS
 from flask_smorest import Api
+from flask_socketio import SocketIO
 from bcrypt import hashpw, gensalt
 
 from resources.Version import blp as VersionBlueprint
+
+socketio = SocketIO(message_queue="redis://redis:6379/0", cors_allowed_origins='*')
 
 def create_app(settings_module: str = 'globals') -> Flask:
     """
@@ -58,11 +61,17 @@ def create_app(settings_module: str = 'globals') -> Flask:
     app.config['API_KEY'] = hashed.decode()
     
     def getApiPrefix(url:str) -> str: return f"{app.config['API_PREFIX']}/{url}"
+    def getSocketIOPrefix(url:str) -> str: return f"{app.config['SOCKETIO_PREFIX']}/{url}"
 
     api = Api(app)
 
+    socketio.init_app(app, cors_allowed_origins='*')
+
     # HTTP routes
     api.register_blueprint(VersionBlueprint, url_prefix=app.config['VERSION_ENDPOINT'])
+
+    # SocketIO events
+    # socketio.on_namespace(Events(getSocketIOPrefix('events')))
     
     ## NotImplementedError
     @app.errorhandler(NotImplementedError)
@@ -84,4 +93,4 @@ def create_app(settings_module: str = 'globals') -> Flask:
 app = create_app(os.getenv('SETTINGS_MODULE', 'globals'))
 
 if __name__ == "__main__":
-    app.run(threaded=True, host="0.0.0.0", port=app.config.get('PORT', 5000), debug=app.config.get('DEBUG', False), use_reloader=app.config.get('DEBUG', False))
+    socketio.run(app, host="0.0.0.0", port=app.config.get('PORT', 5000), debug=app.config.get('DEBUG', False), use_reloader=app.config.get('DEBUG', False), allow_unsafe_werkzeug=True)

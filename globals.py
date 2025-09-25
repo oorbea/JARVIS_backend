@@ -25,7 +25,7 @@ SOCKETIO_PREFIX = os.getenv('SOCKETIO_PREFIX', DEFAULT_SOCKETIO_PREFIX)
 DEBUG = str(os.getenv('DEBUG', DEFAULT_DEBUG)).lower() in ('t', 'true', '1', 'y', 'yes')
 PORT = int(os.getenv('PORT', DEFAULT_PORT))
 HOST_NAME = os.getenv('HOST_NAME', f'http://localhost:{PORT}')
-API_KEY = os.getenv('API_KEY', None)
+DB_AUTO_MIGRATE = str(os.getenv('DB_AUTO_MIGRATE', 'true')).lower() in ('t', 'true', '1', 'y', 'yes')
 
 #------------------------------
 

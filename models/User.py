@@ -1,5 +1,6 @@
 from typing import TypedDict
 from db import db
+import bcrypt
 
 class UserDict(TypedDict):
     email: str
@@ -12,27 +13,35 @@ class User(db.Model):
     password = db.Column(db.String(128), nullable=False)
 
     def __repr__(self):
-        return f"<Challenge {self.title}>"
+        return f"<User {self.email}>"
     
-    def to_dict(self) -> ChallengeDict:
-        return ChallengeDict(
-            title=self.title,
-            description=self.description,
-            drinking=self.drinking,
-            sex=self.sex,
-            smoking=self.smoking,
-            partner_friendly=self.partner_friendly,
-            probability=self.probability,
-            icon=self.icon,
-            skipping=self.skipping,
-            voting=self.voting,
-            prize=self.prize,
-            males=self.males,
-            females=self.females
+    def to_dict(self) -> UserDict:
+        return UserDict(
+            email=self.email,
+            password=self.password
         )
+    
+    @classmethod
+    def hash_password(cls, password: str) -> str:
+        """
+        Hash a password
+        
+        Args:
+            password (str): The password to hash
+            
+        Returns:
+            str: The hashed password
+        """
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    def check_password(self, password: str) -> bool:
+        """
+        Check a password against the stored hash
+        
+        Args:
+            password (str): The password to check
 
-    def __len__(self) -> int:
+        Returns:
+            bool: True if the password matches, False otherwise
         """
-        Returns the length of the challenge description.
-        """
-        return len(self.description)
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))

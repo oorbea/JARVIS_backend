@@ -1,8 +1,8 @@
 import traceback
+from flask_jwt_extended import jwt_required
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
 from flask import current_app as app, jsonify
-from helpers.auth.require_api_key import require_api_key
 
 blp = Blueprint('version', __name__, description='Get the current version of the API.')
 
@@ -10,10 +10,9 @@ blp = Blueprint('version', __name__, description='Get the current version of the
 class Version(MethodView):
     """Returns the current version of the API."""
 
-    @require_api_key()
+    @jwt_required()
     @blp.response(200, description="Current version of the API.")
-    @blp.response(401, description="Missing API key.")
-    @blp.response(403, description="Invalid API key.")
+    @blp.response(401, description="Missing or invalid JWT.")
     @blp.response(500, description="Internal Server Error")
     def get(self):
         """Retrieve the current API version."""

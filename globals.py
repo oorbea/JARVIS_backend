@@ -26,6 +26,8 @@ DEBUG = str(os.getenv('DEBUG', DEFAULT_DEBUG)).lower() in ('t', 'true', '1', 'y'
 PORT = int(os.getenv('PORT', DEFAULT_PORT))
 HOST_NAME = os.getenv('HOST_NAME', f'http://localhost:{PORT}')
 DB_AUTO_MIGRATE = str(os.getenv('DB_AUTO_MIGRATE', 'true')).lower() in ('t', 'true', '1', 'y', 'yes')
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+JWT_TOKEN_LOCATION = os.getenv('JWT_TOKEN_LOCATION', 'headers').split(',')
 
 #------------------------------
 

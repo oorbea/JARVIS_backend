@@ -4,6 +4,7 @@ from flask_smorest import Blueprint, abort
 from flask.views import MethodView
 from flask import current_app as app, jsonify
 from db import db
+from models.Person import Person
 from models.User import User
 
 from schemas import UserRegisterSchema
@@ -27,8 +28,26 @@ class UserEndpoint(MethodView):
             }
             user = User(**user_payload)
             db.session.add(user)
+
+            person_payload = {
+                "name": data['name'],
+                "surname": data['surname'],
+                "email": data['email'],
+                "courtesy_title": data['courtesy_title'],
+                "boss": True,
+                "description": None,
+                "can_talk": True
+            }
+            person = Person(**person_payload)
+            db.session.add(person)
+
             db.session.commit()
-            return {"message": "User successfully registered."}, 201
+
+            return_payload = {
+                "user": user.to_dict(),
+                "person": person.to_dict()
+            }
+            return jsonify(return_payload), 201
         except Exception as e:
             traceback.print_exc()
             db.session.rollback()

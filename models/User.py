@@ -6,7 +6,6 @@ import datetime
 
 class UserDict(TypedDict):
     email: str
-    password: str
     admin: bool
 
 class User(db.Model):
@@ -22,7 +21,6 @@ class User(db.Model):
     def to_dict(self) -> UserDict:
         return UserDict(
             email=self.email,
-            password=self.password,
             admin=self.admin
         )
     

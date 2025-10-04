@@ -12,7 +12,7 @@ blp = Blueprint('user', __name__, description='User CRUD')
 
 @blp.route('')
 class UserEndpoint(MethodView):
-    """"""
+    """User endpoints."""
 
     @blp.arguments(UserRegisterSchema)
     @blp.response(201, description="User successfully registered.")

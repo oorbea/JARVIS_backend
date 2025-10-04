@@ -9,8 +9,7 @@ from bcrypt import hashpw, gensalt
 
 from db import create_db
 from resources.Version import blp as VersionBlueprint
-
-socketio = SocketIO(message_queue="redis://redis:6379/0", cors_allowed_origins='*')
+from resources.User import blp as UserBlueprint
 
 def create_app(settings_module: str = 'globals') -> Flask:
     """
@@ -77,10 +76,9 @@ def create_app(settings_module: str = 'globals') -> Flask:
 
     api.spec.options["security"] = [{"jwt": []}]
 
-    socketio.init_app(app, cors_allowed_origins='*')
-
     # HTTP routes
     api.register_blueprint(VersionBlueprint, url_prefix=app.config['VERSION_ENDPOINT'])
+    api.register_blueprint(UserBlueprint, url_prefix=getApiPrefix('user'))
 
     # SocketIO events
     # socketio.on_namespace(Events(getSocketIOPrefix('events')))
@@ -114,4 +112,5 @@ def create_app(settings_module: str = 'globals') -> Flask:
 app = create_app(os.getenv('SETTINGS_MODULE', 'globals'))
 
 if __name__ == "__main__":
+    socketio = SocketIO(app, cors_allowed_origins='*')
     socketio.run(app, host="0.0.0.0", port=app.config.get('PORT', 5000), debug=app.config.get('DEBUG', False), use_reloader=app.config.get('DEBUG', False), allow_unsafe_werkzeug=True)

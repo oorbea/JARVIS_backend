@@ -78,6 +78,36 @@ class UserEndpoint(MethodView):
             traceback.print_exc()
             abort(500, message=str(e))
 
+    @jwt_required()
+    @blp.arguments(UserRegisterSchema(only=("email", "password")))
+    @blp.response(200, description="My user information updated successfully.")
+    @blp.response(400, description="Invalid input data.")
+    @blp.response(401, description="Missing or invalid JWT.")
+    @blp.response(404, description="User not found.")
+    @blp.response(409, description="User with this email already exists.")
+    @blp.response(500, description="Internal Server Error")
+    def put(self, data:dict):
+        """Update my user information."""
+        try:
+            email:str = get_jwt_identity()
+            user:User|None = User.query.get(email)
+            if not user:
+                abort(404, message="User not found.")
+            new_user:User|None = User.query.get(data['email'])
+            if new_user and new_user.email != user.email:
+                abort(409, message="User with this email already exists.")
+            user.password = User.hash_password(data['password'])
+            user.email = data['email']
+            db.session.commit()
+            return jsonify(user.to_dict()), 200
+        except ValueError as e:
+            db.session.rollback()
+            abort(400, message=str(e))
+        except Exception as e:
+            traceback.print_exc()
+            db.session.rollback()
+            abort(500, message=str(e))
+
 
 @blp.route('/login')
 class LoginEndpoint(MethodView):

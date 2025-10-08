@@ -17,6 +17,8 @@ class UserEndpoint(MethodView):
 
     @blp.arguments(UserRegisterSchema)
     @blp.response(201, description="User successfully registered.")
+    @blp.response(400, description="Invalid input data.")
+    @blp.response(409, description="User with this email already exists.")
     @blp.response(500, description="Internal Server Error")
     def post(self, data:dict):
         """Register a new user."""
@@ -48,9 +50,30 @@ class UserEndpoint(MethodView):
                 "person": person.to_dict()
             }
             return jsonify(return_payload), 201
-        except ValueError as ve:
-            abort(400, message=str(ve))
+        except ValueError as e:
+            db.session.rollback()
+            abort(400, message=str(e))
+        except db.IntegrityError as e:
+            db.session.rollback()
+            abort(409, message="User with this email already exists.")
         except Exception as e:
             traceback.print_exc()
             db.session.rollback()
+            abort(500, message=str(e))
+
+@blp.route('/login')
+class LoginEndpoint(MethodView):
+    """User login endpoint."""
+
+    @blp.arguments(UserRegisterSchema(only=("email", "password")))
+    @blp.response(200, description="User successfully logged in.")
+    @blp.response(400, description="Invalid input data.")
+    @blp.response(401, description="Invalid email or password.")
+    @blp.response(500, description="Internal Server Error")
+    def post(self, data:dict):
+        """Login a user."""
+        try:
+            user = User.query.get(data['email'])
+        except Exception as e:
+            traceback.print_exc()
             abort(500, message=str(e))

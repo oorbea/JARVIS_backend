@@ -8,8 +8,8 @@ from flask_socketio import SocketIO
 from bcrypt import hashpw, gensalt
 
 from db import create_db
-from resources.Version import blp as VersionBlueprint
-from resources.User import blp as UserBlueprint
+from resources.version import blp as VersionBlueprint
+from resources.user import blp as UserBlueprint
 
 def create_app(settings_module: str = 'globals') -> Flask:
     """

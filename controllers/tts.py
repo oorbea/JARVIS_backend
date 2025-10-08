@@ -6,10 +6,10 @@ from urllib.parse import urlencode
 
 import websockets
 from websockets.legacy.client import WebSocketClientProtocol
-from controllers.BaseController import BaseController
-from enums.AudioFormat import AudioFormat
-from enums.ChannelType import ChannelType
-from enums.VoiceID import VoiceID
+from controllers.base import BaseController
+from enums.audio_format import AudioFormat
+from enums.channel_type import ChannelType
+from enums.voice_id import VoiceID
 from flask import current_app
 
 

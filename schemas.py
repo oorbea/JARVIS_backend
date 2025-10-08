@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, validate
-from enums.CourtesyTitle import CourtesyTitle
+from enums.courtesy_title import CourtesyTitle
 
 class Password(fields.String):
     def __init__(self, *args, **kwargs):

@@ -1,6 +1,6 @@
 from typing import TypedDict
 from db import db
-from enums.CourtesyTitle import CourtesyTitle
+from enums.courtesy_title import CourtesyTitle
 
 class PersonDict(TypedDict):
     name: str

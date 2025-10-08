@@ -1,4 +1,3 @@
-# controllers/VoiceRecognizerController.py
 import json
 import uuid
 import numpy as np
@@ -6,7 +5,7 @@ import librosa
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 
-from controllers.BaseController import BaseController
+from controllers.base import BaseController
 from resemblyzer import VoiceEncoder, preprocess_wav
 
 ArrayLikeAudio = Union[str, np.ndarray, Tuple[np.ndarray, int]]

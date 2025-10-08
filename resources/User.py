@@ -73,7 +73,14 @@ class LoginEndpoint(MethodView):
     def post(self, data:dict):
         """Login a user."""
         try:
-            user = User.query.get(data['email'])
+            user:User|None = User.query.get(data['email'])
+            if user and user.check_password(data['password']):
+                access_token = user.generate_jwt()
+                return jsonify({"access_token": access_token}), 200
+            else:
+                abort(401, message="Invalid email or password.")
+        except ValueError as e:
+            abort(400, message=str(e))
         except Exception as e:
             traceback.print_exc()
             abort(500, message=str(e))

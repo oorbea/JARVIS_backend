@@ -1,5 +1,5 @@
 import traceback
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
 from flask import current_app as app, jsonify
@@ -60,6 +60,24 @@ class UserEndpoint(MethodView):
             traceback.print_exc()
             db.session.rollback()
             abort(500, message=str(e))
+    
+    @jwt_required()
+    @blp.response(200, description="My user information retrieved successfully.")
+    @blp.response(401, description="Missing or invalid JWT.")
+    @blp.response(404, description="User not found.")
+    @blp.response(500, description="Internal Server Error")
+    def get(self):
+        """Get my user information."""
+        try:
+            email:str = get_jwt_identity()
+            user:User|None = User.query.get(email)
+            if not user:
+                abort(404, message="User not found.")
+            return jsonify(user.to_dict()), 200
+        except Exception as e:
+            traceback.print_exc()
+            abort(500, message=str(e))
+
 
 @blp.route('/login')
 class LoginEndpoint(MethodView):

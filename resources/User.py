@@ -35,7 +35,7 @@ class UserEndpoint(MethodView):
                 "email": data['email'],
                 "courtesy_title": data['courtesy_title'],
                 "boss": True,
-                "description": None,
+                "description": data.get('description'),
                 "can_talk": True
             }
             person = Person(**person_payload)
@@ -48,6 +48,8 @@ class UserEndpoint(MethodView):
                 "person": person.to_dict()
             }
             return jsonify(return_payload), 201
+        except ValueError as ve:
+            abort(400, message=str(ve))
         except Exception as e:
             traceback.print_exc()
             db.session.rollback()

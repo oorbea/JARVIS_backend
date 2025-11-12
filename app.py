@@ -5,7 +5,6 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate, upgrade as alembic_upgrade
 from flask_smorest import Api
 from flask_socketio import SocketIO
-from bcrypt import hashpw, gensalt
 
 from db import create_db
 from resources.version import blp as VersionBlueprint

@@ -27,3 +27,12 @@ class LocalStorageController(IStorageController):
 
     def write_file(self, file_path: str, data: bytes) -> None:
         self.__writer.write_file(file_path, data)
+
+class CloudStorageController(IStorageController):
+    def read_file(self, file_path: str) -> bytes:
+        #TODO: Implement cloud storage reading logic
+        raise NotImplementedError("CloudStorageController is not implemented yet.")
+
+    def write_file(self, file_path: str, data: bytes) -> None:
+        #TODO: Implement cloud storage writing logic
+        raise NotImplementedError("CloudStorageController is not implemented yet.")

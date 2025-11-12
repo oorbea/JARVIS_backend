@@ -18,3 +18,8 @@ class LocalWriterController(IWriterController):
     def write_file(self, file_path: str, data: bytes) -> None:
         with open(file_path, 'wb') as file:
             file.write(data)
+
+class CloudWriterController(IWriterController):
+    def write_file(self, file_path: str, data: bytes) -> None:
+        #TODO: Implement cloud storage writing logic
+        raise NotImplementedError("CloudWriterController is not implemented yet.")

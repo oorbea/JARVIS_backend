@@ -20,3 +20,8 @@ class LocalReaderController(IReaderController):
     def read_file(self, file_path: str) -> bytes:
         with open(file_path, 'rb') as file:
             return file.read()
+        
+class CloudReaderController(IReaderController):
+    def read_file(self, file_path: str) -> bytes:
+        #TODO: Implement cloud storage reading logic
+        raise NotImplementedError("CloudReaderController is not implemented yet.")

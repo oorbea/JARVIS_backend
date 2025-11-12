@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from controllers.storage.storage import IStorageController, LocalStorageController
-from controllers.storage.reader import IReaderController, LocalReaderController
-from controllers.storage.writer import IWriterController, LocalWriterController
+from controllers.storage.storage import CloudStorageController, IStorageController, LocalStorageController
+from controllers.storage.reader import CloudReaderController, IReaderController, LocalReaderController
+from controllers.storage.writer import CloudWriterController, IWriterController, LocalWriterController
 
 class IControllerFactory(ABC):
     @abstractmethod
@@ -45,4 +45,28 @@ class LocalStorageControllerFactory(IControllerFactory):
     def get_writer_controller(self) -> IWriterController:
         if not self.__writer_controller:
             self.__writer_controller = LocalWriterController()
+        return self.__writer_controller
+    
+class CloudStorageControllerFactory(IControllerFactory):
+    __reader_controller: IReaderController | None
+    __writer_controller: IWriterController | None
+    __storage_controller: IStorageController | None
+
+    def get_storage_controller(self) -> IStorageController:
+        if self.__storage_controller:
+            return self.__storage_controller
+        self.__storage_controller = CloudStorageController(
+            reader=self.get_reader_controller(),
+            writer=self.get_writer_controller()
+        )
+        return self.__storage_controller
+
+    def get_reader_controller(self) -> IReaderController:
+        if not self.__reader_controller:
+            self.__reader_controller = CloudReaderController()
+        return self.__reader_controller
+
+    def get_writer_controller(self) -> IWriterController:
+        if not self.__writer_controller:
+            self.__writer_controller = CloudWriterController()
         return self.__writer_controller

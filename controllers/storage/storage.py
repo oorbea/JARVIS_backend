@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from controllers.storage.reader import CloudReaderController, IReaderController, LocalReaderController
 from controllers.storage.writer import CloudWriterController, IWriterController, LocalWriterController

@@ -51,9 +51,11 @@ class UserEndpoint(MethodView):
             }
             return jsonify(return_payload), 201
         except ValueError as e:
+            traceback.print_exc()
             db.session.rollback()
             abort(400, message=str(e))
         except db.IntegrityError as e:
+            traceback.print_exc()
             db.session.rollback()
             abort(409, message="User with this email already exists.")
         except Exception as e:
@@ -101,6 +103,7 @@ class UserEndpoint(MethodView):
             db.session.commit()
             return jsonify(user.to_dict()), 200
         except ValueError as e:
+            traceback.print_exc()
             db.session.rollback()
             abort(400, message=str(e))
         except Exception as e:
@@ -133,6 +136,7 @@ class UserEndpoint(MethodView):
             db.session.commit()
             return jsonify(user.to_dict()), 200
         except ValueError as e:
+            traceback.print_exc()
             db.session.rollback()
             abort(400, message=str(e))
         except Exception as e:
@@ -179,6 +183,7 @@ class LoginEndpoint(MethodView):
             else:
                 abort(401, message="Invalid email or password.")
         except ValueError as e:
+            traceback.print_exc()
             abort(400, message=str(e))
         except Exception as e:
             traceback.print_exc()

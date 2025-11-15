@@ -39,3 +39,5 @@ JWT_TOKEN_LOCATION = os.getenv('JWT_TOKEN_LOCATION', 'headers').split(',')
 #------------------------------
 
 MURF_API_KEY = os.getenv("MURF_API_KEY")
+BACKBLAZE_B2_KEY_ID = os.getenv("BACKBLAZE_B2_KEY_ID")
+BACKBLAZE_B2_APPLICATION_KEY = os.getenv("BACKBLAZE_B2_APPLICATION_KEY")

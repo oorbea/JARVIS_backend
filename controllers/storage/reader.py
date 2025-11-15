@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from adapters.cloud_storage.backblaze_b2 import BackblazeB2Adapter
+from adapters.cloud_storage.interface import ICloudStorageAdapter
 from helpers.dataclasses.file import FileData
 from enums.file_format import FileFormat
 
@@ -34,5 +36,5 @@ class LocalReaderController(IReaderController):
 
 class CloudReaderController(IReaderController):
     def read_file(self, file_path: str) -> FileData:
-        #TODO: Implement cloud storage reading logic
-        raise NotImplementedError("CloudReaderController is not implemented yet.")
+        adapter:ICloudStorageAdapter = BackblazeB2Adapter()
+        return adapter.download_file(file_path)

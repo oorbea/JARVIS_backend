@@ -31,10 +31,10 @@ class BackblazeB2Adapter(ICloudStorageAdapter):
             traceback.print_exc()
             raise CloudStorageAuthorizationException from e
         
-    def upload_file(self, file: FileData) -> None:
+    def upload_file(self, file_path: str, data: bytes) -> None:
         try:
             bucket:Bucket = self.__b2_api.get_bucket_by_name(self.__bucket_name)
-            bucket.upload_bytes(file.file_content, file.path, file_info=file.metadata)
+            bucket.upload_bytes(data, file_path)
         except Exception as e:
             traceback.print_exc()
             raise CloudStorageUploadException from e

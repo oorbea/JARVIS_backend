@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+from adapters.cloud_storage.backblaze_b2 import BackblazeB2Adapter
+from adapters.cloud_storage.interface import ICloudStorageAdapter
+
 class IWriterController(ABC):
     @abstractmethod
     def write_file(self, file_path: str, data: bytes) -> None:
@@ -21,5 +24,5 @@ class LocalWriterController(IWriterController):
 
 class CloudWriterController(IWriterController):
     def write_file(self, file_path: str, data: bytes) -> None:
-        #TODO: Implement cloud storage writing logic
-        raise NotImplementedError("CloudWriterController is not implemented yet.")
+        adapter:ICloudStorageAdapter = BackblazeB2Adapter()
+        return adapter.upload_file(file_path, data)

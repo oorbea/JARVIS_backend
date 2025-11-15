@@ -4,12 +4,13 @@ from helpers.dataclasses.file import FileData
 
 class ICloudStorageAdapter(ABC):
     @abstractmethod
-    def upload_file(self, file: FileData) -> None:
+    def upload_file(self, file_path: str, data: bytes) -> None:
         """
         Uploads a file to cloud storage.
 
         Args:
-            file (FileData): The file data to upload.
+            file_path (str): The path in cloud storage where the file will be uploaded.
+            data (bytes): The data to upload.
         Raises:
             OSError: If there is an error uploading the file.
         """

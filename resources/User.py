@@ -169,7 +169,7 @@ class LoginEndpoint(MethodView):
     """User login endpoint."""
 
     @blp.arguments(UserRegisterSchema(only=("email", "password")))
-    @blp.response(200, description="User successfully logged in.")
+    @blp.response(200, description="User successfully logged in. Access token returned.")
     @blp.response(400, description="Invalid input data.")
     @blp.response(401, description="Invalid email or password.")
     @blp.response(500, description="Internal Server Error")
